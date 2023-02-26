@@ -26,7 +26,7 @@ class Config(object):
 
         # about the optimization
         self.num_epochs = 100
-        self.batch_size = 32
+        self.batch_size = 1
         self.optimizer = 'Adam'    # 'Adam', 'RMSProp', 'Momentum' or 'SGD'
         self.initial_learning_rate = 0.0001
         self.learning_rate_decay_factor = 1.0
@@ -51,7 +51,7 @@ class Config(object):
 
         # about the training
         self.train_image_dir = './train/images/'
-        self.train_caption_file = './train/captions_train2014.json'
+        self.train_caption_file = '/afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/safe_data/show_and_tell_data/captions_train2014.json'
         self.temp_annotation_file = './train/anns.csv'
         self.temp_data_file = './train/data.npy'
 

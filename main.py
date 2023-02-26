@@ -1,9 +1,11 @@
 #!/usr/bin/python
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 
 from config import Config
 from model import CaptionGenerator
-from dataset import prepare_train_data, prepare_eval_data, prepare_test_data
+from dataset import prepare_train_data, prepare_eval_data, prepare_vocabulary
 from scipy.misc import imread, imresize
 from imagenet_classes import class_names
 import numpy as np
@@ -36,8 +38,13 @@ tf.flags.DEFINE_integer('beam_size', 3,
 tf.flags.DEFINE_string('image_file','./man.jpg','The file to test the CNN')
 
 
-## Start token is not required, Stop Tokens are given via "." at the end of each sentence.
-## TODO : Early stop functionality by considering validation error. We should first split the validation data.
+# Define paths for our data
+triplets_root_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
+                    "jhuang24/safe_data/jan01_jan02_2023_triplets"
+
+caption_save_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
+                   "jhuang24/safe_data/jan01_jan02_2023_triplets_captions"
+
 
 def main(argv):
     config = Config()
@@ -85,12 +92,17 @@ def main(argv):
                 print(class_names[p], prob[p])
 
         else:
-            # testing phase
-            data, vocabulary = prepare_test_data(config)
+            print("Running testing phase only.")
+            vocabulary = prepare_vocabulary(config)
             model = CaptionGenerator(config)
             model.load(sess, FLAGS.model_file)
             tf.get_default_graph().finalize()
-            model.test(sess, data, vocabulary)
+
+            # TODO: Modify the test phase to take in our data
+            model.test(sess,
+                       triplets_root_dir,
+                       caption_save_dir,
+                       vocabulary)
 
 if __name__ == '__main__':
     tf.app.run()

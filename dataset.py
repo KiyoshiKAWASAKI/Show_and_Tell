@@ -160,6 +160,7 @@ def prepare_eval_data(config):
     print("Dataset built.")
     return coco, dataset, vocabulary
 
+
 def prepare_test_data(config):
     """ Prepare the data for testing the model. """
     files = os.listdir(config.test_image_dir)
@@ -180,6 +181,25 @@ def prepare_test_data(config):
     dataset = DataSet(image_ids, image_files, config.batch_size)
     print("Dataset built.")
     return dataset, vocabulary
+
+
+
+# TODO (JIN): modify data pre-processing process and get vocabulary only
+def prepare_vocabulary(config):
+
+    print("Building the vocabulary...")
+    if os.path.exists(config.vocabulary_file):
+        vocabulary = Vocabulary(config.vocabulary_size,
+                                config.vocabulary_file)
+    else:
+        vocabulary = build_vocabulary(config)
+    print("Vocabulary built.")
+    print("Number of words = %d" %(vocabulary.size))
+
+    return vocabulary
+
+
+
 
 def build_vocabulary(config):
     """ Build the vocabulary from the training data and save it to a file. """

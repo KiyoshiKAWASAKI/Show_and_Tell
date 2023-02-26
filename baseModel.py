@@ -2,18 +2,26 @@ import copy
 import json
 import os
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+import sys
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 from tqdm import tqdm
+from utils.misc import ImageLoader
+import json
 
 
 import six.moves.cPickle as pickle
 from utils.coco.pycocoevalcap.eval import COCOEvalCap
 from utils.misc import  ImageLoader
 from utils.nn import NN
+
+
+mean_file_path = "./utils/ilsvrc_2012_mean.npy"
 
 
 class BaseModel(object):
@@ -117,7 +125,7 @@ class BaseModel(object):
         scorer.evaluate()
         print("Evaluation complete.")
 
-    def test(self, sess, test_data, vocabulary):
+    def test_original(self, sess, test_data, vocabulary):
         """ Test the model using any given images. """
         print("Testing the model ...")
         config = self.config
@@ -163,6 +171,66 @@ class BaseModel(object):
         results.to_csv(config.test_result_file)
         print("Testing complete.")
 
+
+
+    # TODO (JIN): write the test process for our data
+    def test(self,
+             sess,
+             test_data_dir,
+             save_result_dir,
+             vocabulary):
+        """
+
+        :param sess:
+        :param test_data_dir:
+        :param save_result_dir:
+        :param vocabulary:
+        :return:
+        """
+        config = self.config
+
+        image_loader = ImageLoader(mean_file=mean_file_path)
+
+        if not os.path.exists(config.test_result_dir):
+            os.mkdir(config.test_result_dir)
+
+        # TODO: Load each sub-folder and all the JPGs in sub-folder
+        for path, subdirs, files in os.walk(test_data_dir):
+
+            for name in files:
+                # Check the subfolder, and make dir for save path if it does not exist
+                current_folder = path.split("/")[-1]
+                target_save_dir = os.path.join(save_result_dir, current_folder)
+
+                if not os.path.isdir(target_save_dir):
+                    os.mkdir(target_save_dir)
+                    print("Making directory: ", target_save_dir)
+
+                # Check whether this is an image file
+                if name.endswith('.jpg'):
+                    one_image = image_loader.load_image(os.path.join(path, name))
+
+                    # Get word indices and probs
+                    caption_data, scores_data = sess.run([self.predictions,self.probs],
+                                                        feed_dict={self.images:[one_image]})
+                    # print(caption_data)
+
+                    # Find the words according to the index
+                    ## get_sentence will return a sentence till there is a end delimiter which is '.'
+                    final_caption = vocabulary.get_sentence(caption_data[0])
+                    # print(final_caption)
+
+                    # Save caption into Json file
+                    file_name = name.split(".")[0] + "_caption.json"
+                    file_save_path = os.path.join(target_save_dir, file_name)
+
+                    data = {"description": final_caption}
+                    with open(file_save_path, 'w') as fp:
+                        json.dump(data, fp)
+
+                    print("File saved: ", file_save_path)
+
+
     def save(self):
         """ Save the model. """
         config = self.config
@@ -193,7 +261,7 @@ class BaseModel(object):
                                      str(global_step)+".npy")
 
         print("Loading the model from %s..." %save_path)
-        data_dict = np.load(save_path).item()
+        data_dict = np.load(save_path, allow_pickle=True).item()
         count = 0
         for v in tqdm(tf.global_variables()):
             if v.name in data_dict.keys():
