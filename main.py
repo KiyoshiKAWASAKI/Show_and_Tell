@@ -39,11 +39,16 @@ tf.flags.DEFINE_string('image_file','./man.jpg','The file to test the CNN')
 
 
 # Define paths for our data
-triplets_root_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
-                    "jhuang24/safe_data/jan01_jan02_2023_triplets"
+# triplets_root_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
+#                     "jhuang24/safe_data/jan01_jan02_2023_triplets"
+#
+# caption_save_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
+#                    "jhuang24/safe_data/jan01_jan02_2023_triplets_captions"
 
-caption_save_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
-                   "jhuang24/safe_data/jan01_jan02_2023_triplets_captions"
+test_data_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/" \
+                "safe_data/NewsImages/gossipcop_images"
+caption_save_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/" \
+                   "safe_data/FakeNewsNet_Dataset_captions/gossipcop"
 
 
 def main(argv):
@@ -99,10 +104,10 @@ def main(argv):
             tf.get_default_graph().finalize()
 
             # TODO: Modify the test phase to take in our data
-            model.test(sess,
-                       triplets_root_dir,
-                       caption_save_dir,
-                       vocabulary)
+            model.test(sess=sess,
+                       test_data_dir=test_data_dir,
+                       save_result_dir=caption_save_dir,
+                       vocabulary=vocabulary)
 
 if __name__ == '__main__':
     tf.app.run()

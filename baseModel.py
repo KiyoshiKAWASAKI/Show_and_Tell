@@ -178,7 +178,8 @@ class BaseModel(object):
              sess,
              test_data_dir,
              save_result_dir,
-             vocabulary):
+             vocabulary,
+             test_icwsm_data=False):
         """
 
         :param sess:
@@ -194,41 +195,75 @@ class BaseModel(object):
         if not os.path.exists(config.test_result_dir):
             os.mkdir(config.test_result_dir)
 
-        # TODO: Load each sub-folder and all the JPGs in sub-folder
-        for path, subdirs, files in os.walk(test_data_dir):
+        # Test Bill's data
+        if test_icwsm_data:
+            # Load each sub-folder and all the JPGs in sub-folder
+            for path, subdirs, files in os.walk(test_data_dir):
 
-            for name in files:
-                # Check the subfolder, and make dir for save path if it does not exist
-                current_folder = path.split("/")[-1]
-                target_save_dir = os.path.join(save_result_dir, current_folder)
+                for name in files:
+                    # Check the subfolder, and make dir for save path if it does not exist
+                    current_folder = path.split("/")[-1]
+                    target_save_dir = os.path.join(save_result_dir, current_folder)
 
-                if not os.path.isdir(target_save_dir):
-                    os.mkdir(target_save_dir)
-                    print("Making directory: ", target_save_dir)
+                    if not os.path.isdir(target_save_dir):
+                        os.mkdir(target_save_dir)
+                        print("Making directory: ", target_save_dir)
 
-                # Check whether this is an image file
-                if name.endswith('.jpg'):
-                    one_image = image_loader.load_image(os.path.join(path, name))
+                    # Check whether this is an image file
+                    if name.endswith('.jpg'):
+                        one_image = image_loader.load_image(os.path.join(path, name))
 
-                    # Get word indices and probs
-                    caption_data, scores_data = sess.run([self.predictions,self.probs],
-                                                        feed_dict={self.images:[one_image]})
-                    # print(caption_data)
+                        # Get word indices and probs
+                        caption_data, scores_data = sess.run([self.predictions,self.probs],
+                                                            feed_dict={self.images:[one_image]})
 
-                    # Find the words according to the index
-                    ## get_sentence will return a sentence till there is a end delimiter which is '.'
-                    final_caption = vocabulary.get_sentence(caption_data[0])
-                    # print(final_caption)
+                        # Find the words according to the index
+                        ## get_sentence will return a sentence till there is a end delimiter which is '.'
+                        final_caption = vocabulary.get_sentence(caption_data[0])
 
-                    # Save caption into Json file
-                    file_name = name.split(".")[0] + "_caption.json"
-                    file_save_path = os.path.join(target_save_dir, file_name)
+                        # Save caption into Json file
+                        file_name = name.split(".")[0] + "_caption.json"
+                        file_save_path = os.path.join(target_save_dir, file_name)
 
-                    data = {"description": final_caption}
-                    with open(file_save_path, 'w') as fp:
-                        json.dump(data, fp)
+                        data = {"description": final_caption}
+                        with open(file_save_path, 'w') as fp:
+                            json.dump(data, fp)
 
-                    print("File saved: ", file_save_path)
+                        print("File saved: ", file_save_path)
+
+        # TODO: Generate captions for SAFE FakeNewsDataset
+        else:
+            print("Using Show and Tell on FakeNewsDataset.")
+
+            all_imgs = os.listdir(test_data_dir)
+
+            for i, one_image_name in enumerate(all_imgs):
+                # Print progress
+                if (i % 100 == 0) or (i == len(all_imgs)):
+                    print("Number of sample processed: ", i)
+
+                # Get captions
+                try:
+                    # print(one_image_name)
+                    one_image = image_loader.load_image(os.path.join(test_data_dir, one_image_name))
+                    # print(one_image)
+                except:
+                    print(i)
+                    continue
+
+                caption_data, scores_data = sess.run([self.predictions, self.probs],
+                                                     feed_dict={self.images: [one_image]})
+
+                final_caption = vocabulary.get_sentence(caption_data[0])
+
+                # Save caption into Json file
+                file_name = one_image_name.split(".")[0] + "_caption.json"
+                file_save_path = os.path.join(save_result_dir, file_name)
+
+                data = {"description": final_caption}
+                with open(file_save_path, 'w') as fp:
+                    json.dump(data, fp)
+
 
 
     def save(self):
