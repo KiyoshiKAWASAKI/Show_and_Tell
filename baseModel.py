@@ -244,11 +244,9 @@ class BaseModel(object):
 
                 # Get captions
                 try:
-                    # print(one_image_name)
                     one_image = image_loader.load_image(os.path.join(test_data_dir, one_image_name))
-                    # print(one_image)
                 except:
-                    print(i)
+                    print("!! Broken image: ", i)
                     continue
 
                 caption_data, scores_data = sess.run([self.predictions, self.probs],
