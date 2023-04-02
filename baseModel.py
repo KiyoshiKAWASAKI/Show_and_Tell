@@ -199,11 +199,17 @@ class BaseModel(object):
         if test_icwsm_data:
             # Load each sub-folder and all the JPGs in sub-folder
             for path, subdirs, files in os.walk(test_data_dir):
-
                 for name in files:
-                    # Check the subfolder, and make dir for save path if it does not exist
-                    current_folder = path.split("/")[-1]
-                    target_save_dir = os.path.join(save_result_dir, current_folder)
+                    # Example: /afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/safe_data/invasion_triplets/
+                    # 4658_triplet/chesno_movement/1826/post_1826_2022-03-01T15:00:21+00:00.json
+                    one_file = os.path.join(path, name)
+
+                    triplet = one_file.split("/")[-4]
+                    user = one_file.split("/")[-3]
+                    post_id = one_file.split("/")[-2]
+                    file_name = one_file.split("/")[-1]
+
+                    target_save_dir = os.path.join(save_result_dir, triplet)
 
                     if not os.path.isdir(target_save_dir):
                         os.mkdir(target_save_dir)
@@ -222,8 +228,9 @@ class BaseModel(object):
                         final_caption = vocabulary.get_sentence(caption_data[0])
 
                         # Save caption into Json file
-                        file_name = name.split(".")[0] + "_caption.json"
-                        file_save_path = os.path.join(target_save_dir, file_name)
+                        file_name = file_name.split(".")[0] + "_caption.json"
+                        file_full_name = user + "_" + post_id + "_" + file_name
+                        file_save_path = os.path.join(target_save_dir, file_full_name)
 
                         data = {"description": final_caption}
                         with open(file_save_path, 'w') as fp:

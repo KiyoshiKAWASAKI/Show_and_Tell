@@ -45,10 +45,20 @@ tf.flags.DEFINE_string('image_file','./man.jpg','The file to test the CNN')
 # caption_save_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/" \
 #                    "jhuang24/safe_data/jan01_jan02_2023_triplets_captions"
 
+# test_data_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/" \
+#                 "safe_data/NewsImages/gossipcop_images"
+# caption_save_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/" \
+#                    "safe_data/FakeNewsNet_Dataset_captions/gossipcop"
+
+# test_data_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/" \
+#                 "safe_data/NewsImages/politifact_images"
+# caption_save_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/" \
+#                    "safe_data/FakeNewsNet_Dataset_captions/politifact"
+
 test_data_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/" \
-                "safe_data/NewsImages/gossipcop_images"
+                "safe_data/invasion_triplets/"
 caption_save_dir = "/afs/crc.nd.edu/group/cvrl/scratch_49/jhuang24/" \
-                   "safe_data/FakeNewsNet_Dataset_captions/gossipcop"
+                   "safe_data/invasion_triplets_captions"
 
 
 def main(argv):
@@ -107,7 +117,8 @@ def main(argv):
             model.test(sess=sess,
                        test_data_dir=test_data_dir,
                        save_result_dir=caption_save_dir,
-                       vocabulary=vocabulary)
+                       vocabulary=vocabulary,
+                       test_icwsm_data=True)
 
 if __name__ == '__main__':
     tf.app.run()
